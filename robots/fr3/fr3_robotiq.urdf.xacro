@@ -1,0 +1,66 @@
+<?xml version='1.0' encoding='utf-8'?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="fr3">
+
+  <!-- ======================================================================= -->
+  <!-- 1. 引入依赖文件 -->
+  <!-- ======================================================================= -->
+  <!-- 机械臂本体视觉与碰撞模型 -->
+  <xacro:include filename="$(find franka_description)/robots/common/franka_robot.xacro"/>
+  <!-- Robotiq 夹爪宏 -->
+  <xacro:include filename="$(find robotiq_description)/urdf/robotiq_2f_85_macro.urdf.xacro" />
+  <!-- 机械臂 ros2_control 驱动配置 (这里面通常已经包含了 Mock 的逻辑) -->
+  <xacro:include filename="$(find franka_description)/robots/common/franka_arm.ros2_control.xacro"/>
+
+  <!-- ======================================================================= -->
+  <!-- 2. 定义参数 -->
+  <!-- ======================================================================= -->
+  <xacro:arg name="arm_id" default="fr3" />
+  <xacro:arg name="use_fake_hardware" default="false" />
+  <xacro:arg name="robot_ip" default="172.16.0.2" />
+
+  <!-- ======================================================================= -->
+  <!-- 3. 实例化机械臂本体 (Visuals & Collisions) -->
+  <!-- ======================================================================= -->
+  <xacro:franka_robot 
+      arm_id="$(arg arm_id)"
+      joint_limits="${xacro.load_yaml('$(find franka_description)/robots/fr3/joint_limits.yaml')}"
+      inertials="${xacro.load_yaml('$(find franka_description)/robots/fr3/inertials.yaml')}"
+      kinematics="${xacro.load_yaml('$(find franka_description)/robots/fr3/kinematics.yaml')}"
+      dynamics="${xacro.load_yaml('$(find franka_description)/robots/fr3/dynamics.yaml')}"
+      use_fake_hardware="$(arg use_fake_hardware)"
+      robot_ip="$(arg robot_ip)"
+      connected_to=""/>
+      
+  <!-- ======================================================================= -->
+  <!-- 4. 实例化机械臂驱动 (ROS2 Control) -->
+  <!-- ======================================================================= -->
+  <!-- 
+       注意：这个宏内部会自动判断 use_fake_hardware。
+       如果是 true，它加载 Mock；如果是 false，它加载 FrankaHardwareInterface。
+       所以我们不需要在下面再手动写一遍 Mock 配置，否则会冲突！
+  -->
+  <xacro:franka_arm_ros2_control 
+      arm_id="$(arg arm_id)"
+      robot_ip="$(arg robot_ip)"
+      use_fake_hardware="$(arg use_fake_hardware)"/>
+
+  <!-- ======================================================================= -->
+  <!-- 5. 实例化 Robotiq 夹爪 -->
+  <!-- ======================================================================= -->
+  <xacro:robotiq_gripper 
+      name="robotiq_gripper"
+      prefix=""
+      parent="fr3_link8"
+      include_ros2_control="true"
+      use_fake_hardware="$(arg use_fake_hardware)"
+      com_port="/dev/gripper">
+    <!-- 安装位置：旋转45度以适配法兰 -->
+    <origin xyz="0 0 0" rpy="0 0 ${-pi/4}" />
+  </xacro:robotiq_gripper>
+
+  <!-- ======================================================================= -->
+  <!-- ⚠️ 已删除底部的 FrankaMockHardware 配置 -->
+  <!-- 之前的冲突就是因为那里重复定义了，导致真假驱动打架。现在文件很干净。 -->
+  <!-- ======================================================================= -->
+
+</robot>
