@@ -17,6 +17,7 @@
   <xacro:arg name="arm_id" default="fr3" />
   <xacro:arg name="use_fake_hardware" default="false" />
   <xacro:arg name="robot_ip" default="172.16.0.2" />
+  <xacro:arg name="use_gripper" default="true" />
 
   <!-- ======================================================================= -->
   <!-- 3. 实例化机械臂本体 (Visuals & Collisions) -->
@@ -47,16 +48,18 @@
   <!-- ======================================================================= -->
   <!-- 5. 实例化 Robotiq 夹爪 -->
   <!-- ======================================================================= -->
-  <xacro:robotiq_gripper 
-      name="robotiq_gripper"
-      prefix=""
-      parent="fr3_link8"
-      include_ros2_control="true"
-      use_fake_hardware="$(arg use_fake_hardware)"
-      com_port="/dev/gripper">
-    <!-- 安装位置：旋转45度以适配法兰 -->
-    <origin xyz="0 0 0" rpy="0 0 ${-pi/4}" />
-  </xacro:robotiq_gripper>
+  <xacro:if value="$(arg use_gripper)">
+    <xacro:robotiq_gripper 
+        name="robotiq_gripper"
+        prefix=""
+        parent="fr3_link8"
+        include_ros2_control="true"
+        use_fake_hardware="$(arg use_fake_hardware)"
+        com_port="/dev/gripper">
+      <!-- 安装位置：旋转45度以适配法兰 -->
+      <origin xyz="0 0 0" rpy="0 0 ${-pi/4}" />
+    </xacro:robotiq_gripper>
+  </xacro:if>
 
   <!-- ======================================================================= -->
   <!-- ⚠️ 已删除底部的 FrankaMockHardware 配置 -->
