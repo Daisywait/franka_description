@@ -19,6 +19,7 @@
   <xacro:arg name="robot_ip" default="172.16.0.2" />
   <xacro:arg name="use_gripper" default="true" />
   <xacro:arg name="gripper_reactivate_on_startup" default="true" />
+  <xacro:arg name="use_arm_ros2_control" default="true" />
 
   <!-- ======================================================================= -->
   <!-- 3. 实例化机械臂本体 (Visuals & Collisions) -->
@@ -41,10 +42,12 @@
        如果是 true，它加载 Mock；如果是 false，它加载 FrankaHardwareInterface。
        所以我们不需要在下面再手动写一遍 Mock 配置，否则会冲突！
   -->
-  <xacro:franka_arm_ros2_control 
-      arm_id="$(arg arm_id)"
-      robot_ip="$(arg robot_ip)"
-      use_fake_hardware="$(arg use_fake_hardware)"/>
+  <xacro:if value="$(arg use_arm_ros2_control)">
+    <xacro:franka_arm_ros2_control 
+        arm_id="$(arg arm_id)"
+        robot_ip="$(arg robot_ip)"
+        use_fake_hardware="$(arg use_fake_hardware)"/>
+  </xacro:if>
 
   <!-- ======================================================================= -->
   <!-- 5. 实例化 Robotiq 夹爪 -->
